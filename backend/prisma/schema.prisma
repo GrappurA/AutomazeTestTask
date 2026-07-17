@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model TodoList {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String     @map("user_id") @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  
+  items       TodoItem[]
+
+  @@map("todo_lists")
+}
+
+model TodoItem {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  listId    String    @map("list_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  title     String
+  isDone    Boolean   @default(false) @map("is_done")
+  priority  Int       
+  position  Float     @default(0) @db.Real
+  dueDate   DateTime? @map("due_date") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  list TodoList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  // Indexes for fast querying and sorting
+  @@index([userId])
+  @@index([listId])
+  @@index([listId, position])
+  @@index([listId, createdAt])
+  @@index([listId, priority])
+  
+  @@map("todo_items")
+}
