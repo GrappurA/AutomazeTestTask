@@ -4,6 +4,38 @@
 
 @custom-variant dark (&:is(.dark *));
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #4a4e69 #22223b;
+}
+
+/* Chrome, Edge, and Safari support */
+::-webkit-scrollbar {
+  width: 10px;
+  /* Width of vertical scrollbar */
+  height: 10px;
+  /* Height of horizontal scrollbar */
+}
+
+/* The track (background) */
+::-webkit-scrollbar-track {
+  background: #22223b;
+  border-radius: 8px;
+}
+
+/* The draggable thumb */
+::-webkit-scrollbar-thumb {
+  background: #4a4e69;
+  border-radius: 8px;
+  border: 2px solid #22223b;
+  /* Creates a clean gap around the thumb */
+}
+
+/* The draggable thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #c9ada7;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -121,9 +153,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }

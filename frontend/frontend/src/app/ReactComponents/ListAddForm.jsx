@@ -1,7 +1,9 @@
 
 export default function ListAddForm() {
-    function handleAddList() {
-
+    function handleAddList(e) {
+        e.preventDefault()
+        const formData = new FormData(e.target)
+        alert(formData.get('title'))
     }
 
     return (
