@@ -1,10 +1,10 @@
 "use client"
-import { useState } from "react"
-import { supabase } from "../../../lib/supabase"
-import { redirect, useRouter } from "next/navigation";
 
-export default function LoginPage() {
-    const router = useRouter()
+import { redirect } from "next/navigation"
+import { supabase } from "../../../lib/supabase"
+
+
+export default function RegisterPage() {
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -13,20 +13,15 @@ export default function LoginPage() {
         const email = formData.get("email")
         const password = formData.get("password")
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password
         })
         if (error) {
-            alert(`Error during login process`)
+            alert(`Error during register process ${error}`)
         }
-
-        if (!error)
-            router.push('/')
     }
-
     return (
-        // The flex-1 layout we just set up, keeping it perfectly centered
         <div className="flex-1 flex flex-col items-center justify-center p-4">
 
             <form
@@ -36,10 +31,10 @@ export default function LoginPage() {
                 {/* Header Section */}
                 <div className="text-center mb-2">
                     <h2 className="text-3xl font-bold tracking-wide text-[#c9ada7] uppercase">
-                        Welcome Back
+                        Welcome !
                     </h2>
                     <p className="text-[#9a8c98] text-sm mt-1">
-                        Sign in to access your lists
+                        Sign up to start planning your stuff
                     </p>
                 </div>
 
@@ -85,13 +80,13 @@ export default function LoginPage() {
                     type="submit"
                     className="mt-4 w-full bg-[#c9ada7] hover:bg-[#9a8c98] text-[#22223b] font-bold text-sm px-5 py-3 rounded-xl transition-colors shadow-md uppercase tracking-wide"
                 >
-                    Sign In
+                    Sign Up
                 </button>
 
                 {/* Optional Footer Link */}
                 <div className="text-center mt-2">
-                    <p onClick={() => { redirect('/register') }} className="text-xs text-[#9a8c98] hover:text-[#c9ada7] transition-colors">
-                        Don't have an account? Sign up
+                    <p onClick={() => { redirect('/login') }} className="text-xs text-[#9a8c98] hover:text-[#c9ada7] transition-colors">
+                        Already have an account? Sign In
                     </p>
                 </div>
             </form>

@@ -2,6 +2,8 @@ import { Rowdies } from "next/font/google";
 import "./globals.css";
 import { redirect } from "next/dist/server/api-utils";
 import Header from "./ReactComponents/Header";
+import AuthGuard from "./ReactComponents/AuthGuard";
+import { supabase } from "../../lib/supabase";
 
 const rowdies = Rowdies({
   subsets: ['latin'],
@@ -28,13 +30,15 @@ export default function RootLayout({ children }) {
 
       <body className={`bg-[#9A8C98] min-h-screen flex flex-col ${rowdies.className} overflow-x-hidden scroll-smooth`}>
 
-        <div className="h-[10%]">
-          <Header />
-        </div>
+        <AuthGuard>
+          <div className="h-[10%]">
+            <Header />
+          </div>
 
-        <div className="p-1 h-full">
-          {children}
-        </div>
+          <div className="p-1 h-full">
+            {children}
+          </div>
+        </AuthGuard>
 
       </body>
     </html >

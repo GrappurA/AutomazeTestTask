@@ -9,9 +9,17 @@ import {
 } from '../../components/ui/dropdown-menu'
 import { Button } from "../../components/ui/button"
 import { MoreVertical, Settings, LogOut } from "lucide-react"
+import { supabase } from '../../../lib/supabase'
+import { redirect } from "next/navigation"
 
 export default function Header() {
     const router = useRouter()
+
+    async function handleLogOut() {
+        await supabase.auth.signOut()
+        redirect('/login')
+    }
+
     return (
         <header className="select-none bg-[#22223b] border-b-2 border-[#4a4e69] px-6 py-3 flex items-center justify-between shadow-md">
 
@@ -24,7 +32,7 @@ export default function Header() {
 
             {/* Center: Interactive Logo */}
             <div
-                onClick={() => { router.push('/') }}
+                onClick={() => { redirect('/') }}
                 className="flex-shrink-0 cursor-pointer group flex items-center gap-2"
             >
                 <h1 className="text-3xl font-black tracking-wide text-[#f2e9e4] group-hover:text-[#c9ada7] transition-colors">
@@ -56,7 +64,7 @@ export default function Header() {
 
                         <DropdownMenuItem className="cursor-pointer text-red-400 hover:bg-red-500/15 focus:bg-red-500/15 focus:text-red-300 rounded-lg transition-colors py-2.5 mt-1">
                             <LogOut className="mr-2 h-4 w-4" />
-                            <span className="font-medium text-sm">Log Out</span>
+                            <span onClick={handleLogOut} className="font-medium text-sm">Log Out</span>
                         </DropdownMenuItem>
 
                     </DropdownMenuContent>
