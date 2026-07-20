@@ -26,13 +26,13 @@ export default function RootLayout({ children }) {
       className={`h-full antialiased`}
     >
 
-      <body className={`min-h-screen flex flex-col ${rowdies.className} overflow-x-hidden scroll-smooth`}>
+      <body className={`bg-[#9A8C98] min-h-screen flex flex-col ${rowdies.className} overflow-x-hidden scroll-smooth`}>
 
         <div className="h-[10%]">
           <Header />
         </div>
 
-        <div className="bg-[#9A8C98] p-1 h-full">
+        <div className="p-1 h-full">
           {children}
         </div>
 

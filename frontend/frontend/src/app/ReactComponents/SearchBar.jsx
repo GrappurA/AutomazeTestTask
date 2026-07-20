@@ -15,6 +15,7 @@ export default function SearchBar({ showsTasks }) {
             <div className="flex flex-1 items-center gap-2 w-full px-2">
                 <input
                     type="text"
+                    required
                     placeholder={`Search ${showsTasks ? 'tasks' : 'lists'}...`}
                     className="w-full bg-[#4a4e69]/30 border-2 border-[#4a4e69] rounded-lg px-3 py-2 text-sm text-[#f2e9e4] placeholder:text-[#9a8c98] focus:outline-none focus:border-[#c9ada7] transition-all"
                 />

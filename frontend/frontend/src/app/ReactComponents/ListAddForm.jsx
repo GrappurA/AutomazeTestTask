@@ -7,7 +7,7 @@ export default function ListAddForm() {
     }
 
     return (
-        <div className="w-full max-w-2xl  mt-1">
+        <div className="w-full max-w-2xl mt-1">
             <form
                 onSubmit={handleAddList}
                 // Horizontal structure: flex-row layout with items aligned inline
@@ -25,6 +25,7 @@ export default function ListAddForm() {
                         type="text"
                         name="title"
                         id="title"
+                        required
                         placeholder="Enter list name..."
                         className="w-full bg-[#4a4e69]/30 border-2 border-[#4a4e69] rounded-lg px-3 py-2 text-sm text-[#f2e9e4] placeholder:text-[#9a8c98] focus:outline-none focus:border-[#c9ada7] transition-all"
                     />
