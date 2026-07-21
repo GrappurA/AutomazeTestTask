@@ -15,6 +15,23 @@ export default function Task({ id, title, isDone, priority, createdAt, onStatusT
         })
         : 'Unknown'
 
+    // Priority is 0-10. Grey (#9a8c98) at 0 -> Red (#bd3f3e) at 10.
+    const priorityLevel = Number(priority ?? 0)
+
+    const getPriorityColor = (level) => {
+        const grey = { r: 154, g: 140, b: 152 } // #9a8c98
+        const red = { r: 189, g: 63, b: 62 }    // #bd3f3e
+        const ratio = Math.min(Math.max(level, 0), 10) / 10
+
+        const r = Math.round(grey.r + (red.r - grey.r) * ratio)
+        const g = Math.round(grey.g + (red.g - grey.g) * ratio)
+        const b = Math.round(grey.b + (red.b - grey.b) * ratio)
+
+        return `rgb(${r}, ${g}, ${b})`
+    }
+
+    const priorityColor = getPriorityColor(priorityLevel)
+
     return (
         <div className="flex flex-col bg-[#22223b] border-2 border-[#4a4e69] hover:border-[#c9ada7] transition-all hover:-translate-y-1 hover:shadow-xl rounded-xl w-full max-w-2xs mt-4 shadow-lg text-[#f2e9e4] overflow-hidden select-none">
 
@@ -41,14 +58,16 @@ export default function Task({ id, title, isDone, priority, createdAt, onStatusT
                     <span className="text-xs font-semibold uppercase tracking-wider text-[#9a8c98]">
                         Priority
                     </span>
-                    <span className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md 
-                        ${priority === 'High' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                            priority === 'Medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                priority === 'Low' ? 'bg-[#c9ada7]/10 text-[#c9ada7] border border-[#c9ada7]/20' :
-                                    'bg-[#9a8c98]/10 text-[#9a8c98] border border-[#9a8c98]/20'}`}
+                    <span
+                        style={{
+                            color: priorityColor,
+                            backgroundColor: `${priorityColor}1A`, // ~10% opacity fill
+                            borderColor: `${priorityColor}33`,     // ~20% opacity border
+                        }}
+                        className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md border"
                     >
-                        {priority && priority !== 'None' && <AlertCircle className="w-3 h-3" />}
-                        {priority || 'None'}
+                        {priorityLevel > 0 && <AlertCircle className="w-3 h-3" />}
+                        {priorityLevel}
                     </span>
                 </div>
 

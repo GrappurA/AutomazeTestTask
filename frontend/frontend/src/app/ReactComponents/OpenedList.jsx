@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Plus, Trash2, Calendar, AlertCircle } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
+import { getPriorityStyles } from '../../../lib/priorityColor'
 
 export default function OpenedListView({ list, onBack, onProgressChange }) {
     const [tasks, setTasks] = useState([])
     const [newTaskText, setNewTaskText] = useState("")
     const [isLoading, setIsLoading] = useState(true)
-    const [newTaskPriority, setNewTaskPriority] = useState("None")
+    const [newTaskPriority, setNewTaskPriority] = useState(0)
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -34,22 +35,20 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
 
         const { data: { user } } = await supabase.auth.getUser()
 
-        const priorityValue = newTaskPriority === "None" ? null : newTaskPriority;
-
         const { data, error } = await supabase
             .from('todo_items')
             .insert([{
                 title: newTaskText,
                 list_id: list.id,
                 user_id: user.id,
-                priority: priorityValue
+                priority: newTaskPriority
             }])
             .select()
 
         if (!error && data) {
             setTasks([...tasks, data[0]])
             setNewTaskText("")
-            setNewTaskPriority("None")
+            setNewTaskPriority(0)
         } else {
             console.error("Error adding task:", error?.message)
         }
@@ -98,6 +97,8 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
 
     }, [progressPercent, isLoading, list.id])
 
+    const newTaskPriorityStyles = getPriorityStyles(newTaskPriority)
+
     return (
         <div className="w-full max-w-4xl h-full sm:h-[90vh] bg-[#22223b] sm:rounded-3xl border-2 border-[#4a4e69] p-4 sm:p-8 shadow-2xl flex flex-col animate-scale-up">
 
@@ -136,7 +137,6 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
             </div>
 
             {/* Add Task Form */}
-            {/* Add Task Form */}
             <form onSubmit={handleAddTask} className="flex flex-col sm:flex-row gap-3 mb-6">
                 <input
                     type="text"
@@ -147,25 +147,23 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
                 />
 
                 <div className="flex gap-3">
-                    {/* The Colored Dropdown */}
+                    {/* The Colored Priority Dropdown (0-10) */}
                     <div className="relative">
                         <select
                             value={newTaskPriority}
-                            onChange={(e) => setNewTaskPriority(e.target.value)}
-                            className={`appearance-none h-full border-2 rounded-xl px-4 py-4 pr-10 text-sm font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#c9ada7] transition-all cursor-pointer shadow-sm
-                                ${newTaskPriority === 'High' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
-                                    newTaskPriority === 'Medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
-                                        newTaskPriority === 'Low' ? 'bg-[#c9ada7]/10 text-[#c9ada7] border-[#c9ada7]/30' :
-                                            'bg-[#4a4e69]/20 text-[#9a8c98] border-[#4a4e69]'}`}
+                            onChange={(e) => setNewTaskPriority(Number(e.target.value))}
+                            style={newTaskPriorityStyles}
+                            className="appearance-none h-full border-2 rounded-xl px-4 py-4 pr-10 text-sm font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#c9ada7] transition-all cursor-pointer shadow-sm"
                         >
-                            <option value="None" className="bg-[#22223b] text-[#9a8c98]">None</option>
-                            <option value="Low" className="bg-[#22223b] text-[#c9ada7]">Low</option>
-                            <option value="Medium" className="bg-[#22223b] text-amber-400">Medium</option>
-                            <option value="High" className="bg-[#22223b] text-red-400">High</option>
+                            {Array.from({ length: 11 }, (_, i) => i).map((level) => (
+                                <option key={level} value={level} className="bg-[#22223b] text-[#f2e9e4]">
+                                    {level}
+                                </option>
+                            ))}
                         </select>
                         {/* Custom Dropdown Arrow (since we hid the default appearance) */}
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <svg className={`w-4 h-4 ${newTaskPriority === 'None' ? 'text-[#9a8c98]' : 'text-current'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </div>
@@ -191,61 +189,65 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
                 ) : tasks.length === 0 ? (
                     <p className="text-[#9a8c98] text-center mt-10 text-lg">You haven't added any tasks yet.</p>
                 ) : (
-                    tasks.map((task, index) => (
-                        <div
-                            key={task.id}
-                            className="animate-slide-in-task group flex items-start gap-4 bg-[#4a4e69]/20 hover:bg-[#4a4e69]/40 border-2 border-transparent hover:border-[#4a4e69] rounded-xl p-4 transition-all shadow-sm"
-                            style={{ animationDelay: `${index * 40}ms` }}
-                        >
-                            <div className="relative flex items-center justify-center w-7 h-7 shrink-0 mt-0.5">
-                                <input
-                                    type="checkbox"
-                                    checked={task.is_done}
-                                    onChange={() => toggleTask(task.id, task.is_done)}
-                                    className="peer appearance-none w-7 h-7 border-2 border-[#9a8c98] checked:border-[#c9ada7] checked:bg-[#c9ada7] rounded-lg cursor-pointer transition-all active:scale-90"
-                                />
-                                <svg className="absolute w-5 h-5 text-[#22223b] pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
+                    tasks.map((task, index) => {
+                        const taskPriorityLevel = Number(task.priority ?? 0)
+                        const taskPriorityStyles = getPriorityStyles(taskPriorityLevel)
 
-                            <div className="flex flex-col flex-1 gap-1.5">
-                                <span className={`flex items-center text-2xl transition-all duration-300 ${task.is_done ? 'text-[#9a8c98] line-through opacity-70' : 'text-[#f2e9e4]'}`}>
-                                    {task.title}
-                                </span>
-
-                                {/* DB Metadata Row (Priority) */}
-                                {(task.priority || task.due_date) && (
-                                    <div className="flex items-center gap-3 mt-1">
-                                        {task.priority && (
-                                            <span className={`flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md 
-                                                ${task.priority === 'High' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                    task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                                        'bg-[#9a8c98]/10 text-[#9a8c98] border border-[#9a8c98]/20'}`}
-                                            >
-                                                <AlertCircle className="w-3 h-3" />
-                                                {task.priority}
-                                            </span>
-                                        )}
-
-                                        {task.due_date && (
-                                            <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#9a8c98]">
-                                                <Calendar className="w-3 h-3" />
-                                                {new Date(task.due_date).toLocaleDateString()}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            <button
-                                onClick={() => deleteTask(task.id)}
-                                className="p-2.5 text-[#4a4e69] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all active:scale-90 rounded-lg hover:bg-red-500/10 shrink-0"
+                        return (
+                            <div
+                                key={task.id}
+                                className="animate-slide-in-task group flex items-start gap-4 bg-[#4a4e69]/20 hover:bg-[#4a4e69]/40 border-2 border-transparent hover:border-[#4a4e69] rounded-xl p-4 transition-all shadow-sm"
+                                style={{ animationDelay: `${index * 40}ms` }}
                             >
-                                <Trash2 className="w-7 h-7" />
-                            </button>
-                        </div>
-                    ))
+                                <div className="relative flex items-center justify-center w-7 h-7 shrink-0 mt-0.5">
+                                    <input
+                                        type="checkbox"
+                                        checked={task.is_done}
+                                        onChange={() => toggleTask(task.id, task.is_done)}
+                                        className="peer appearance-none w-7 h-7 border-2 border-[#9a8c98] checked:border-[#c9ada7] checked:bg-[#c9ada7] rounded-lg cursor-pointer transition-all active:scale-90"
+                                    />
+                                    <svg className="absolute w-5 h-5 text-[#22223b] pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+
+                                <div className="flex flex-col flex-1 gap-1.5">
+                                    <span className={`flex items-center text-2xl transition-all duration-300 ${task.is_done ? 'text-[#9a8c98] line-through opacity-70' : 'text-[#f2e9e4]'}`}>
+                                        {task.title}
+                                    </span>
+
+                                    {/* DB Metadata Row (Priority) */}
+                                    {(task.priority !== null && task.priority !== undefined || task.due_date) && (
+                                        <div className="flex items-center gap-3 mt-1">
+                                            {(task.priority !== null && task.priority !== undefined) && (
+                                                <span
+                                                    style={taskPriorityStyles}
+                                                    className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border"
+                                                >
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    {taskPriorityLevel}
+                                                </span>
+                                            )}
+
+                                            {task.due_date && (
+                                                <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#9a8c98]">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {new Date(task.due_date).toLocaleDateString()}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={() => deleteTask(task.id)}
+                                    className="p-2.5 text-[#4a4e69] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all active:scale-90 rounded-lg hover:bg-red-500/10 shrink-0"
+                                >
+                                    <Trash2 className="w-7 h-7" />
+                                </button>
+                            </div>
+                        )
+                    })
                 )}
             </div>
         </div>

@@ -18,7 +18,11 @@ export default function Home() {
   const [lists, setLists] = useState([])
   const [tasks, setTasks] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+
+  //filtering states
   const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("All")
+  const [priorityFilter, setPriorityFilter] = useState("All") // "All" or a number 0-10
 
   const fetchLists = async () => {
     setIsLoading(true)
@@ -93,9 +97,28 @@ export default function Home() {
     fetchLists()
   }, [showsTasks])
 
-  const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchQuery.toLowerCase()))
-  const filteredLists = lists.filter(list => list.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredTasks = tasks.filter(task => {
+    //Text Search Check
+    const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase())
 
+    //Status Check
+    const isTaskDone = task.is_done || task.isDone
+    const matchesStatus =
+      statusFilter === "All" ? true :
+        statusFilter === "Done" ? isTaskDone :
+          statusFilter === "Undone" ? !isTaskDone : true
+
+    //Priority Check (0-10 scale, defaults to 0 if unset)
+    const taskPriority = Number(task.priority ?? 0)
+    const matchesPriority =
+      priorityFilter === "All" ? true :
+        Number(priorityFilter) === taskPriority
+
+    // Only keep the task if it passes ALL active filters
+    return matchesSearch && matchesStatus && matchesPriority
+  })
+
+  const filteredLists = lists.filter(list => list.title.toLowerCase().includes(searchQuery.toLowerCase()))
 
   return (
     <div className="w-screen p-2">
@@ -133,49 +156,64 @@ export default function Home() {
           <ListAddForm onListAdded={fetchLists} />
         </div>
 
-        <SearchBar showsTasks={showsTasks} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-center mt-4 w-[99%]">
+
+          {/* Search Bar + Filters (all handled inside SearchBar) */}
+          <div className="w-full">
+            <SearchBar
+              showsTasks={showsTasks}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              priorityFilter={priorityFilter}
+              setPriorityFilter={setPriorityFilter}
+            />
+          </div>
+
+        </div>
+
+        {showsTasks ? (
+          /* tasks */
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
+            {tasks.length === 0 ? (
+              <p className="text-[#4A4E69] col-span-full">Loading your tasks...</p>
+            ) : (
+              filteredTasks.map((task) => (
+                <Task
+                  onStatusToggle={toggleStatus}
+                  id={task.id}
+                  key={task.id}
+                  title={task.title}
+                  isDone={task.is_done || task.isDone} // Handles both DB naming conventions
+                  priority={task.priority}
+                  createdAt={task.created_at || task.createdAt}
+                />
+              ))
+            )}
+          </div>
+        ) : (
+          /* lists */
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
+            {lists.length === 0 ? (
+              <p className="text-[#4A4E69] col-span-full">Loading your lists...</p>
+            ) : (
+              filteredLists.map((list, index) => (
+                <List
+                  key={list.id}
+                  index={index}
+                  id={list.id}
+                  title={list.title}
+                  donePercentage={list.done_percentage}
+                  createdAt={list.created_at}
+                  isDone={list.is_done}
+                />
+              ))
+            )}
+          </div>
+        )}
+
       </div>
-
-      {showsTasks ? (
-        /* tasks */
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
-          {tasks.length === 0 ? (
-            <p className="text-[#4A4E69] col-span-full">Loading your tasks...</p>
-          ) : (
-            filteredTasks.map((task) => (
-              <Task
-                onStatusToggle={toggleStatus}
-                id={task.id}
-                key={task.id}
-                title={task.title}
-                isDone={task.is_done || task.isDone} // Handles both DB naming conventions
-                priority={task.priority}
-                createdAt={task.created_at || task.createdAt}
-              />
-            ))
-          )}
-        </div>
-      ) : (
-        /* lists */
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
-          {lists.length === 0 ? (
-            <p className="text-[#4A4E69] col-span-full">Loading your lists...</p>
-          ) : (
-            filteredLists.map((list, index) => (
-              <List
-                key={list.id}
-                index={index}
-                id={list.id}
-                title={list.title}
-                donePercentage={list.done_percentage}
-                createdAt={list.created_at}
-                isDone={list.is_done}
-              />
-            ))
-          )}
-        </div>
-      )}
-
     </div>
   );
 }
