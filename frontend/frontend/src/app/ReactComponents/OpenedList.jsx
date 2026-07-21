@@ -8,6 +8,7 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
     const [tasks, setTasks] = useState([])
     const [newTaskText, setNewTaskText] = useState("")
     const [isLoading, setIsLoading] = useState(true)
+    const [newTaskPriority, setNewTaskPriority] = useState("None")
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -33,18 +34,22 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
 
         const { data: { user } } = await supabase.auth.getUser()
 
+        const priorityValue = newTaskPriority === "None" ? null : newTaskPriority;
+
         const { data, error } = await supabase
             .from('todo_items')
             .insert([{
                 title: newTaskText,
                 list_id: list.id,
-                user_id: user.id
+                user_id: user.id,
+                priority: priorityValue
             }])
             .select()
 
         if (!error && data) {
             setTasks([...tasks, data[0]])
             setNewTaskText("")
+            setNewTaskPriority("None")
         } else {
             console.error("Error adding task:", error?.message)
         }
@@ -131,7 +136,8 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
             </div>
 
             {/* Add Task Form */}
-            <form onSubmit={handleAddTask} className="flex gap-3 mb-6">
+            {/* Add Task Form */}
+            <form onSubmit={handleAddTask} className="flex flex-col sm:flex-row gap-3 mb-6">
                 <input
                     type="text"
                     value={newTaskText}
@@ -139,13 +145,41 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
                     placeholder="Add a new task..."
                     className="flex-1 bg-[#4a4e69]/20 border-2 border-[#4a4e69] rounded-xl px-5 py-4 text-[#f2e9e4] placeholder:text-[#9a8c98] focus:outline-none focus:border-[#c9ada7] focus:bg-[#4a4e69]/40 transition-all text-lg shadow-inner"
                 />
-                <button
-                    type="submit"
-                    disabled={!newTaskText.trim()}
-                    className="bg-[#c9ada7] hover:bg-[#b09690] disabled:opacity-50 disabled:hover:bg-[#c9ada7] text-[#22223b] px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center shadow-md"
-                >
-                    <Plus className="w-8 h-8" />
-                </button>
+
+                <div className="flex gap-3">
+                    {/* The Colored Dropdown */}
+                    <div className="relative">
+                        <select
+                            value={newTaskPriority}
+                            onChange={(e) => setNewTaskPriority(e.target.value)}
+                            className={`appearance-none h-full border-2 rounded-xl px-4 py-4 pr-10 text-sm font-bold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-[#c9ada7] transition-all cursor-pointer shadow-sm
+                                ${newTaskPriority === 'High' ? 'bg-red-500/10 text-red-400 border-red-500/30' :
+                                    newTaskPriority === 'Medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                                        newTaskPriority === 'Low' ? 'bg-[#c9ada7]/10 text-[#c9ada7] border-[#c9ada7]/30' :
+                                            'bg-[#4a4e69]/20 text-[#9a8c98] border-[#4a4e69]'}`}
+                        >
+                            <option value="None" className="bg-[#22223b] text-[#9a8c98]">No Priority</option>
+                            <option value="Low" className="bg-[#22223b] text-[#c9ada7]">Low</option>
+                            <option value="Medium" className="bg-[#22223b] text-amber-400">Medium</option>
+                            <option value="High" className="bg-[#22223b] text-red-400">High</option>
+                        </select>
+                        {/* Custom Dropdown Arrow (since we hid the default appearance) */}
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <svg className={`w-4 h-4 ${newTaskPriority === 'None' ? 'text-[#9a8c98]' : 'text-current'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Add Button */}
+                    <button
+                        type="submit"
+                        disabled={!newTaskText.trim()}
+                        className="bg-[#c9ada7] hover:bg-[#b09690] disabled:opacity-50 disabled:hover:bg-[#c9ada7] text-[#22223b] px-6 rounded-xl transition-all active:scale-95 flex items-center justify-center shadow-md shrink-0"
+                    >
+                        <Plus className="w-8 h-8" />
+                    </button>
+                </div>
             </form>
 
             {/* Tasks List */}

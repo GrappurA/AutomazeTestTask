@@ -5,7 +5,7 @@ import filledStarIcon from '../../../public/filledStarIcon.png'
 import unfilledStarIcon from '../../../public/unfilledStarIcon.png'
 import { AlertCircle, Calendar } from 'lucide-react'
 
-export default function Task({ id, title, isDone, priority, createdAt, onStatusToggle }) {
+export default function Task({ id, title, isDone, priority, createdAt, onStatusToggle, onPriorityChange }) {
     // Format the date just like the List component
     const formattedDate = createdAt
         ? new Date(createdAt).toLocaleDateString('en-US', {

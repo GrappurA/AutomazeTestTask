@@ -18,10 +18,10 @@ export default function Home() {
   const [lists, setLists] = useState([])
   const [tasks, setTasks] = useState([])
   const [isLoading, setIsLoading] = useState(false)
-  const [updateData, setUpdateData] = useState(false)
 
   const fetchLists = async () => {
     setIsLoading(true)
+    setLists([])
     const { data: { user } } = await supabase.auth.getUser()
 
     if (user) {
@@ -45,6 +45,7 @@ export default function Home() {
   //different fetch choice: backend instead of useEffect
   const fetchTasks = async () => {
     setIsLoading(true)
+    setTasks([])
     try {
       const { data: { user } } = await supabase.auth.getUser()
       //url here
@@ -134,7 +135,7 @@ export default function Home() {
         /* tasks */
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
           {tasks.length === 0 ? (
-            <p className="text-[#4A4E69] col-span-full">You don't have any tasks yet.</p>
+            <p className="text-[#4A4E69] col-span-full">Loading your tasks...</p>
           ) : (
             tasks.map((task) => (
               <Task
@@ -153,7 +154,7 @@ export default function Home() {
         /* lists */
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
           {lists.length === 0 ? (
-            <p className="text-[#4A4E69] col-span-full">You don't have any lists yet.</p>
+            <p className="text-[#4A4E69] col-span-full">Loading your lists...</p>
           ) : (
             lists.map((list, index) => (
               <List
