@@ -18,6 +18,7 @@ export default function Home() {
   const [lists, setLists] = useState([])
   const [tasks, setTasks] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const fetchLists = async () => {
     setIsLoading(true)
@@ -92,6 +93,10 @@ export default function Home() {
     fetchLists()
   }, [showsTasks])
 
+  const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredLists = lists.filter(list => list.title.toLowerCase().includes(searchQuery.toLowerCase()))
+
+
   return (
     <div className="w-screen p-2">
       <div className="flex items-center justify-left gap-4">
@@ -128,7 +133,7 @@ export default function Home() {
           <ListAddForm onListAdded={fetchLists} />
         </div>
 
-        <SearchBar showsTasks={showsTasks} />
+        <SearchBar showsTasks={showsTasks} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </div>
 
       {showsTasks ? (
@@ -137,7 +142,7 @@ export default function Home() {
           {tasks.length === 0 ? (
             <p className="text-[#4A4E69] col-span-full">Loading your tasks...</p>
           ) : (
-            tasks.map((task) => (
+            filteredTasks.map((task) => (
               <Task
                 onStatusToggle={toggleStatus}
                 id={task.id}
@@ -156,7 +161,7 @@ export default function Home() {
           {lists.length === 0 ? (
             <p className="text-[#4A4E69] col-span-full">Loading your lists...</p>
           ) : (
-            lists.map((list, index) => (
+            filteredLists.map((list, index) => (
               <List
                 key={list.id}
                 index={index}

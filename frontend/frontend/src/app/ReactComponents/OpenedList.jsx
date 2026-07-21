@@ -158,7 +158,7 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
                                         newTaskPriority === 'Low' ? 'bg-[#c9ada7]/10 text-[#c9ada7] border-[#c9ada7]/30' :
                                             'bg-[#4a4e69]/20 text-[#9a8c98] border-[#4a4e69]'}`}
                         >
-                            <option value="None" className="bg-[#22223b] text-[#9a8c98]">No Priority</option>
+                            <option value="None" className="bg-[#22223b] text-[#9a8c98]">None</option>
                             <option value="Low" className="bg-[#22223b] text-[#c9ada7]">Low</option>
                             <option value="Medium" className="bg-[#22223b] text-amber-400">Medium</option>
                             <option value="High" className="bg-[#22223b] text-red-400">High</option>
@@ -210,11 +210,11 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
                             </div>
 
                             <div className="flex flex-col flex-1 gap-1.5">
-                                <span className={`text-lg transition-all duration-300 ${task.is_done ? 'text-[#9a8c98] line-through opacity-70' : 'text-[#f2e9e4]'}`}>
+                                <span className={`flex items-center text-2xl transition-all duration-300 ${task.is_done ? 'text-[#9a8c98] line-through opacity-70' : 'text-[#f2e9e4]'}`}>
                                     {task.title}
                                 </span>
 
-                                {/* DB Metadata Row (Priority & Due Date) */}
+                                {/* DB Metadata Row (Priority) */}
                                 {(task.priority || task.due_date) && (
                                     <div className="flex items-center gap-3 mt-1">
                                         {task.priority && (
@@ -242,7 +242,7 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
                                 onClick={() => deleteTask(task.id)}
                                 className="p-2.5 text-[#4a4e69] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all active:scale-90 rounded-lg hover:bg-red-500/10 shrink-0"
                             >
-                                <Trash2 className="w-5 h-5" />
+                                <Trash2 className="w-7 h-7" />
                             </button>
                         </div>
                     ))
