@@ -54,7 +54,7 @@ export default function Home() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       //url here
-      const response = await fetch(`http://localhost:5000/tasks/${user.id}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tasks/${user.id}`)
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
