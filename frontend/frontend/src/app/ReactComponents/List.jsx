@@ -12,7 +12,11 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
 
     const [localDonePercentage, setLocalDonePercentage] = useState(donePercentage || 0)
     const [localIsDone, setLocalIsDone] = useState(isDone || false)
-
+    const color = () => {
+        if (localDonePercentage < 30) return 'red'
+        if (localDonePercentage < 60) return 'yellow'
+        else return 'green'
+    }
     const formattedDate = createdAt
         ? new Date(createdAt).toLocaleDateString('en-US', {
             month: 'short',
@@ -50,7 +54,7 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
                         <span className="text-xs font-semibold uppercase tracking-wider text-[#9a8c98]">
                             Progress
                         </span>
-                        <span className="text-sm font-bold text-[#f2e9e4]">
+                        <span className={`text-sm font-bold text-${color()}`}>
                             {localDonePercentage || 0}%
                         </span>
                     </div>
@@ -65,38 +69,40 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
                         </span>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* The Full-Screen Opened View */}
-            {isOpen && (
-                <div
-                    onClick={(e) => {
-                        // 2. e.target is what was physically clicked. e.currentTarget is this wrapper div.
-                        // We only close if they match perfectly (meaning they didn't click inside the OpenedListView)
-                        if (e.target === e.currentTarget) {
-                            e.stopPropagation()
-                            setIsOpen(false)
-                        }
-                    }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-[#9a8c98] p-2 sm:p-6 backdrop-blur-sm">
-                    {/* 
+            {
+                isOpen && (
+                    <div
+                        onClick={(e) => {
+                            // 2. e.target is what was physically clicked. e.currentTarget is this wrapper div.
+                            // We only close if they match perfectly (meaning they didn't click inside the OpenedListView)
+                            if (e.target === e.currentTarget) {
+                                e.stopPropagation()
+                                setIsOpen(false)
+                            }
+                        }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-[#9a8c98] p-2 sm:p-6 backdrop-blur-sm">
+                        {/* 
                       We pass the exact data from this card down into the opened view. 
                       No need to fetch the list details again! 
                     */}
-                    <OpenedListView
-                        list={{ id, title, isDone, donePercentage, createdAt }}
-                        onBack={(e) => {
-                            e.stopPropagation() // Prevents the card underneath from being clicked
-                            setIsOpen(false)
-                        }}
-                        onProgressChange={(newDonePercentage) => {
-                            setLocalDonePercentage(newDonePercentage)
-                            //magic number here
-                            setLocalIsDone(newDonePercentage === 80)
-                        }}
-                    />
-                </div>
-            )}
+                        <OpenedListView
+                            list={{ id, title, isDone, donePercentage, createdAt }}
+                            onBack={(e) => {
+                                e.stopPropagation() // Prevents the card underneath from being clicked
+                                setIsOpen(false)
+                            }}
+                            onProgressChange={(newDonePercentage) => {
+                                setLocalDonePercentage(newDonePercentage)
+                                //magic number here
+                                setLocalIsDone(newDonePercentage === 80)
+                            }}
+                        />
+                    </div>
+                )
+            }
         </>
     )
 }

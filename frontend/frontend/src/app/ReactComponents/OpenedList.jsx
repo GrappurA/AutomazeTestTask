@@ -9,12 +9,11 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
     const [newTaskText, setNewTaskText] = useState("")
     const [isLoading, setIsLoading] = useState(true)
 
-    // 1. Fetch tasks when this specific list opens
     useEffect(() => {
         const fetchTasks = async () => {
             setIsLoading(true)
             const { data, error } = await supabase
-                .from('todo_items') // Matches your actual database schema table
+                .from('todo_items')
                 .select('*')
                 .eq('list_id', list.id)
                 .order('created_at', { ascending: true })
@@ -28,7 +27,6 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
         if (list?.id) fetchTasks()
     }, [list?.id])
 
-    // 2. Add a new task
     const handleAddTask = async (e) => {
         e.preventDefault()
         if (!newTaskText.trim()) return
@@ -38,7 +36,7 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
         const { data, error } = await supabase
             .from('todo_items')
             .insert([{
-                title: newTaskText, // Matches your DB schema (title instead of text)
+                title: newTaskText,
                 list_id: list.id,
                 user_id: user.id
             }])
@@ -52,7 +50,6 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
         }
     }
 
-    // 3. Toggle Checkbox (Mark as done/undone)
     const toggleTask = async (taskId, currentStatus) => {
         setTasks(tasks.map(t => t.id === taskId ? { ...t, is_done: !currentStatus } : t))
 
@@ -64,7 +61,6 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
         if (error) console.error("Error updating task:", error.message)
     }
 
-    // 4. Delete a task
     const deleteTask = async (taskId) => {
         setTasks(tasks.filter(t => t.id !== taskId))
 
@@ -74,22 +70,18 @@ export default function OpenedListView({ list, onBack, onProgressChange }) {
             .eq('id', taskId)
     }
 
-    // 5. Calculate progress
     const doneCount = tasks.filter(t => t.is_done).length
     const progressPercent = tasks.length === 0 ? 0 : Math.round((doneCount / tasks.length) * 100)
 
-    // 2. Add this effect to sync the progress everywhere
     useEffect(() => {
         // Don't sync while initially loading data to prevent overwriting the DB with 0%
         if (isLoading) return;
 
-        // A. Update the parent card instantly so the UI feels fast
         if (onProgressChange) onProgressChange(progressPercent);
 
-        // B. Update the database silently in the background
         const updateListDatabase = async () => {
             await supabase
-                .from('todo_lists') // Note: make sure this matches your lists table name!
+                .from('todo_lists')
                 .update({
                     done_percentage: progressPercent,
                     is_done: progressPercent === 100
