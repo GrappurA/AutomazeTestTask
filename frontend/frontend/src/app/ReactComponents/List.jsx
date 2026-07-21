@@ -10,6 +10,17 @@ import OpenedListView from "./OpenedList"
 export default function List({ id, title, isDone, donePercentage, createdAt }) {
     const [isOpen, setIsOpen] = useState(false)
 
+    const [localDonePercentage, setLocalDonePercentage] = useState(donePercentage || 0)
+    const [localIsDone, setLocalIsDone] = useState(isDone || false)
+
+    const formattedDate = createdAt
+        ? new Date(createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        })
+        : 'Unknown'
+
     return (
         <>
             {/* The Closed Card View */}
@@ -24,10 +35,10 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
                     </p>
                     <div className="shrink-0 flex items-center justify-center bg-[#4a4e69]/40 p-2 rounded-lg cursor-pointer hover:bg-[#4a4e69]/80 transition-colors active:scale-95">
                         <Image
-                            src={isDone ? filledStarIcon : unfilledStarIcon}
+                            src={localIsDone ? filledStarIcon : unfilledStarIcon}
                             width={32}
                             height={32}
-                            alt={isDone ? 'Completed' : 'Pending'}
+                            alt={localIsDone ? 'Completed' : 'Pending'}
                         />
                     </div>
                 </div>
@@ -40,7 +51,7 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
                             Progress
                         </span>
                         <span className="text-sm font-bold text-[#f2e9e4]">
-                            {donePercentage || 0}%
+                            {localDonePercentage || 0}%
                         </span>
                     </div>
 
@@ -50,7 +61,7 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
                             Created
                         </span>
                         <span className="text-sm font-bold text-[#f2e9e4]">
-                            {createdAt || 0}
+                            {formattedDate || 0}
                         </span>
                     </div>
                 </div>
@@ -58,7 +69,16 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
 
             {/* The Full-Screen Opened View */}
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#9a8c98] p-2 sm:p-6 backdrop-blur-sm">
+                <div
+                    onClick={(e) => {
+                        // 2. e.target is what was physically clicked. e.currentTarget is this wrapper div.
+                        // We only close if they match perfectly (meaning they didn't click inside the OpenedListView)
+                        if (e.target === e.currentTarget) {
+                            e.stopPropagation()
+                            setIsOpen(false)
+                        }
+                    }}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-[#9a8c98] p-2 sm:p-6 backdrop-blur-sm">
                     {/* 
                       We pass the exact data from this card down into the opened view. 
                       No need to fetch the list details again! 
@@ -68,6 +88,11 @@ export default function List({ id, title, isDone, donePercentage, createdAt }) {
                         onBack={(e) => {
                             e.stopPropagation() // Prevents the card underneath from being clicked
                             setIsOpen(false)
+                        }}
+                        onProgressChange={(newDonePercentage) => {
+                            setLocalDonePercentage(newDonePercentage)
+                            //magic number here
+                            setLocalIsDone(newDonePercentage === 80)
                         }}
                     />
                 </div>

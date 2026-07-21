@@ -22,6 +22,24 @@ router.get('/', async (req, res) => {
     }
 })
 
+router.get('/:userId', async (req, res) => {
+    const { userId } = req.params
+    try {
+        const tasks = await prisma.todoItem.findMany({
+            where: {
+                userId: userId
+            },
+            orderBy: {
+                createdAt: 'asc'
+            }
+        })
+        res.status(200).json(tasks)
+    } catch (error) {
+        console.log(error)
+    }
+
+})
+
 router.post('/', async (req, res) => {
     const { title, isDone, priority, position, listId, userId } = req.body;
     const newTask = await prisma.todoItem.create({

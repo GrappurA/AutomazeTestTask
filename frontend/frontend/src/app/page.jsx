@@ -13,6 +13,7 @@ import { supabase } from "../../lib/supabase"
 export default function Home() {
   const [showsTasks, setShowTasks] = useState(false)
   const [lists, setLists] = useState([])
+  const [tasks, setTasks] = useState([])
   const [isLoading, setIsLoading] = useState(false)
 
   const fetchLists = async () => {
@@ -36,6 +37,31 @@ export default function Home() {
     }
     setIsLoading(false)
   }
+
+  //different fetch choice: backend instead of useEffect
+  const fetchTasks = async () => {
+    setIsLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      //url here
+      const response = await fetch(`http://localhost:5000/tasks/${user.id}`)
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      const data = await response.json()
+      setTasks(data)
+
+    } catch (error) {
+      console.error("Failed to fetch tasks from backend:", error)
+    }
+    finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTasks()
+  }, [showsTasks])
 
   useEffect(() => {
     fetchLists()
@@ -67,7 +93,7 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-5 justify-between">
-        {lists.length === 0 ? (
+        {!showsTasks && lists.length === 0 ? (
           <p className="text-[#4A4E69]">You don't have any lists yet.</p>
         ) : (
           lists.map((list, index) => (
@@ -77,6 +103,17 @@ export default function Home() {
           ))
         )}
       </div>
+
+      {showsTasks && (
+        <div className="flex flex-col gap-2 mt-4">
+          {tasks.map((task) => ( // <-- Changed { to (
+            <div key={task.id} className="bg-[#22223b] text-[#f2e9e4] p-4 rounded-xl border-2 border-[#4a4e69]">
+              {task.title}
+            </div>
+          ))}
+        </div>
+      )}
+
     </div>
   );
 }

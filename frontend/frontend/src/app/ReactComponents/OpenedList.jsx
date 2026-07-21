@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, Plus, Trash2, Calendar, AlertCircle } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
-export default function OpenedListView({ list, onBack }) {
+export default function OpenedListView({ list, onBack, onProgressChange }) {
     const [tasks, setTasks] = useState([])
     const [newTaskText, setNewTaskText] = useState("")
     const [isLoading, setIsLoading] = useState(true)
@@ -77,6 +77,29 @@ export default function OpenedListView({ list, onBack }) {
     // 5. Calculate progress
     const doneCount = tasks.filter(t => t.is_done).length
     const progressPercent = tasks.length === 0 ? 0 : Math.round((doneCount / tasks.length) * 100)
+
+    // 2. Add this effect to sync the progress everywhere
+    useEffect(() => {
+        // Don't sync while initially loading data to prevent overwriting the DB with 0%
+        if (isLoading) return;
+
+        // A. Update the parent card instantly so the UI feels fast
+        if (onProgressChange) onProgressChange(progressPercent);
+
+        // B. Update the database silently in the background
+        const updateListDatabase = async () => {
+            await supabase
+                .from('todo_lists') // Note: make sure this matches your lists table name!
+                .update({
+                    done_percentage: progressPercent,
+                    is_done: progressPercent === 100
+                })
+                .eq('id', list.id)
+        }
+
+        updateListDatabase();
+
+    }, [progressPercent, isLoading, list.id])
 
     return (
         <div className="w-full max-w-4xl h-full sm:h-[90vh] bg-[#22223b] sm:rounded-3xl border-2 border-[#4a4e69] p-4 sm:p-8 shadow-2xl flex flex-col animate-scale-up">
