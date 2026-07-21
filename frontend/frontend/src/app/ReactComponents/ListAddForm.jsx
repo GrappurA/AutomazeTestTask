@@ -1,9 +1,28 @@
+import { supabase } from "../../../lib/supabase"
 
-export default function ListAddForm() {
-    function handleAddList(e) {
+export default function ListAddForm({ onListAdded }) {
+
+    async function handleAddList(e) {
         e.preventDefault()
         const formData = new FormData(e.target)
-        alert(formData.get('title'))
+
+        const { data: { user } } = await supabase.auth.getUser()
+        try {
+            const { data, error } = await supabase
+                .from('todo_lists')
+                .insert({
+                    title: formData.get('title'),
+                    user_id: user.id
+                })
+            if (!error) {
+                e.target.reset()
+                if (onListAdded) onListAdded()
+            }
+            if (error)
+                throw new Error('Error during inserting a list')
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     return (
