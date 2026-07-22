@@ -49,8 +49,8 @@ export default function Header() {
             <div className="flex-1">
                 {tasks &&
                     <div className="text-xl text-[#C9ADA7] font-bold uppercase tracking-wider flex gap-2">
-                        <p>{tasks.filter(t => t.is_done === true).length + '/' + tasks.length} tasks completed</p>
-                        <p className="">({Math.round(tasks.filter(t => t.is_done === true).length / tasks.length * 100)}%)</p>
+                        <p>{tasks.filter(t => t.is_done === true).length + '/' + tasks.length || 0} tasks completed</p>
+                        <p className="">({Math.round(tasks.filter(t => t.is_done === true).length / tasks.length * 100) || 0}%)</p>
 
                     </div>
 
