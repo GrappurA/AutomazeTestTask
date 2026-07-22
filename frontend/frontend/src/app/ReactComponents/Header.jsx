@@ -29,7 +29,7 @@ export default function Header() {
             setTasks(data)
         }
         catch {
-            alert('Error fetching tasks for header data')
+            console.log('Error fetching tasks for header data')
         }
     }
 
