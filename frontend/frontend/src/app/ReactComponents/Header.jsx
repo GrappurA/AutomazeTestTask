@@ -11,23 +11,50 @@ import { Button } from "../../components/ui/button"
 import { MoreVertical, Settings, LogOut } from "lucide-react"
 import { supabase } from '../../../lib/supabase'
 import { redirect } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function Header() {
     const router = useRouter()
+    const [tasks, setTasks] = useState([])
+
+    async function fetchTasks() {
+        try {
+
+            const { data: { user } } = await supabase.auth.getUser()
+            const { data, error } = await supabase
+                .from('todo_items')
+                .select('*')
+                .eq('user_id', user.id)
+
+            setTasks(data)
+        }
+        catch {
+            alert('Error fetching tasks for header data')
+        }
+    }
 
     async function handleLogOut() {
         await supabase.auth.signOut()
         redirect('/login')
     }
 
+    useEffect(() => {
+        fetchTasks()
+    }, [])
+
     return (
         <header className="select-none bg-[#22223b] border-b-2 border-[#4a4e69] px-6 py-3 flex items-center justify-between shadow-md">
 
             {/* Left Side: Context / Navigation */}
             <div className="flex-1">
-                <p className="text-xs font-bold uppercase tracking-wider text-[#9a8c98]">
-                    Tasks
-                </p>
+                {tasks &&
+                    <div className="text-xl text-[#C9ADA7] font-bold uppercase tracking-wider flex gap-2">
+                        <p>{tasks.filter(t => t.is_done === true).length + '/' + tasks.length} tasks completed</p>
+                        <p className="">({Math.round(tasks.filter(t => t.is_done === true).length / tasks.length * 100)}%)</p>
+
+                    </div>
+
+                }
             </div>
 
             {/* Center: Interactive Logo */}
